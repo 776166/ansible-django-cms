@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Usage: ./mysql [reset]
+# Use 'reset' to reset root password
+
+host="default"
+roles="mysql"
+
+root_reset='no'
+if [ ! -z "$1" ]; then
+ if [ "$1" = "reset" ]; then
+  root_reset='yes'
+ fi
+fi
+
+./booker $host $roles
+
+if [ "$host" = "localhost" ]; then
+ may_be_localy='--connection=local'
+fi
+
+playbook=$host
+for role in $roles; do
+ playbook=$playbook'_'$role
+done
+
+playbook=$playbook'.yml'
+
+ansible-playbook \
+	--inventory-file=../hosts $may_be_localy\
+	--extra-vars="root_reset='$root_reset'" \
+	../$playbook
+
+# if [ ! -d ../books ]; then mkdir ../books; fi
+# mv ../$playbook ../books/$playbook
+
+rm ../$playbook
+exit

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+P1=`dirname $0`
+HOME=`cd $P1; cd .. ; pwd`
+
+name=`echo $HOME|cut -d'/' -f4-`
+#version=`echo $HOME|cut -d'/' -f4`
+
+if [ ! -e /home/www/.alivedwui/$name ]; then
+ echo $HOME/ > /home/www/.alivedwui/$name
+fi

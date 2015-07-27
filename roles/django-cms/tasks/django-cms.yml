@@ -1,0 +1,80 @@
+########## Django-cms
+
+  - name: (DJANGO) check if exists django-cms installation step 1
+    shell: "ls -al {{ dist_dir }}{{ site }} | grep app | wc -l"
+    register: cms_checker_1
+
+  - name: (DJANGO) check if exists django-cms installation step 2
+    shell: "ls -al {{ dist_dir }}{{ site }} | grep 'manage.py' | wc -l"
+    register: cms_checker_2
+
+  # - debug: var=cms_checker_1
+  # - debug: var=cms_checker_2
+
+  - name: (DJANGO) install cms
+    sudo_user: "{{ user_uid }}"
+    shell: ". {{ virtualenv }}bin/activate && {{ virtualenv }}bin/djangocms  --i18n yes --use-tz yes --timezone {{ timezone }} --reversion yes --permissions yes --languages {{ languages }} --django-version {{ django_version }} --cms-version {{ cms_version }} --parent-dir {{ dist_dir }}{{ site }} --bootstrap {{ bootstrap }} --starting-page no --no-input --no-sync --no-user --utc {% if database %}--db {{ database }}://{% if database == 'sqlite' %}/{% endif %}{{ db_name }}{% if database != 'sqlite' %}:{{ db_password }}@{{ db_host }}/{{ db_name }}{% endif %}{% endif %} app"
+    when: cms_checker_1.stdout != "1" or cms_checker_2.stdout != "1"
+
+  - name: (DJANGO) create 'etc/', 'tmp/' dirs
+    file: >
+      dest={{ dist_dir }}{{ site }}/{{ item }}
+      state=directory
+      owner="{{ user_uid }}"
+      group="{{ user_uid }}"
+    with_items:
+      - etc
+      - tmp
+      - bin
+
+  - name: (DJANGO) creates various dirs
+    sudo_user: "{{ user_uid }}"
+    copy: src=bin/{{ item }} dest={{ dist_dir }}{{ site }}/bin/{{ item }} owner="{{ user_uid }}" group="{{ user_uid }}" mode=0664
+    with_items:
+      # - "uwsgictl"
+      - "mysql"
+      - "files"
+      # - "backup"
+      # - "on"
+      # - "off"
+      # - "installdb"
+
+  - name: (DJANGO) create target dirs for logs and backups
+    file: >
+      path=/var/{{ item }}/{{ user_uid }}/{{ project }}/{{ site }}
+      state=directory
+      recurse=yes
+      owner="{{ user_uid }}"
+      group="{{ user_uid }}"
+      mode=0750
+    with_items:
+      - log
+      - backups
+
+  - name: (DJANGO) create local settings.py
+    file: >
+      dest={{ uwsgi_conf }}
+      state=directory
+      owner="root"
+      group="root"
+      mode=0755
+
+  - name: (DJANGO) create local settings.py
+    template: >
+      src=settings.py
+      dest={{ settings_py_local }}
+      owner="root"
+      group="root"
+
+  - name: (DJANGO) create symlink to local settings.py
+    file: src={{ settings_py_local }}
+      dest={{ dist_dir }}{{ site }}/app/settings_local.py
+      state=link
+
+  - name: (DJANGO) check settings_local.py included
+    shell: "cat {{ dist_dir }}{{ site }}/app/settings.py | grep -vi grep | grep 'from settings_local import *' | wc -l"
+    register: settings_py_check
+
+  - name: (DJANGO) import settings_local.py to settings.py
+    shell: "echo 'from settings_local import *' >> {{ dist_dir }}{{ site }}/app/settings.py"
+    when: settings_py_check.stdout == '0'

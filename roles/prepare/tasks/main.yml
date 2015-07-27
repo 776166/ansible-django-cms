@@ -1,0 +1,60 @@
+---
+ # - include_vars: ../../../sites/{{ site }}.yml
+
+  - include_vars: ../../../vars/common.yml
+
+  - name: apt-get update
+    apt: update_cache=yes
+
+  - name: install common packages
+    apt: name={{ item }} state=present
+    with_items:
+      - python-pip
+      - python-dev
+      - python-virtualenv
+      - libffi-dev
+      - libssl-dev
+      - libjpeg-dev
+      - libfreetype6
+      - libfreetype6-dev
+      - zlib1g-dev
+      - python-imaging
+      - build-essential
+      - nginx
+      - uwsgi
+      - uwsgi-plugin-python
+      - zip
+      - mc
+
+  - name: install python dependencies
+    pip: name={{ item }} state=present extra_args="--upgrade"
+    with_items:
+      - uwsgi
+      - south
+      - pytils
+      - pytz
+      - pillow
+      # - #########
+      # - certifi
+      # - pyopenssl
+      # - ndg-httpsclient
+      # - djangocms-installer
+
+  - name: force upgrade python dependencies
+    pip: name={{ item }} state=present extra_args="--upgrade"
+    with_items:
+      - virtualenv
+
+  - name: update virtualenv in pip
+    pip: name="virtualenv" extra_args="--upgrade"
+
+  # - include: db/mysql.yml
+
+  - name: Start /*and enable*/ uwsgi
+    # fix in 2.0
+    # service: name=uwsgi state=started enabled=yes
+    command: service uwsgi start
+
+    # Remove after ansible 2.0 relese
+  - name: Enable uwsgi
+    command: update-rc.d uwsgi enable

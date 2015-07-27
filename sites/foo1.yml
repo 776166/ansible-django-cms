@@ -1,0 +1,20 @@
+---
+# Mandatory
+project: "projects"
+user_uid: "www"
+url: "foofoofoo1.me"
+db: "mysql"
+timezone: "Europe/Moscow"
+languages: "ru,en"
+django_version: "stable"
+cms_version: "stable"
+bootstrap: "no"
+admin_username: "foo"
+admin_email: "foo@foofoofoo1.me"
+admin_pass: "foofoofoo"
+virtualenv_dir: ".env"
+
+# Optional
+url_aliases: "foofoofoo1.net foofoofoo1.org"
+sert_country: "US"
+sert_company: "Foo corp"

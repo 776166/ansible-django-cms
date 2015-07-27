@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Usage: ./play (host) (site) (role1) [role2] ... [role6]
+
+if [ -z $3 ]; then echo $usage && exit 1; fi
+
+host="$1"
+roles="$3 $4 $5 $6 $7"
+site=$2
+
+./booker $host $roles
+
+if [ "$host" = "localhost" ]; then
+ may_be_localy='--connection=local'
+fi
+
+playbook=$host
+for role in $roles; do
+ playbook=$playbook'_'$role
+done
+
+playbook=$playbook'.yml'
+
+ansible-playbook \
+	--inventory-file=../hosts $may_be_localy\
+	--extra-vars="site='$site'" \
+	../$playbook
+
+# if [ ! -d ../books ]; then mkdir ../books; fi
+# mv ../$playbook ../books/$playbook
+
+rm ../$playbook
+exit

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# usage='Usage: play (site)\nExamlpe: "./play my_site" for sites/my_site.yml'
+
+site=$1
+if [ -z $1 ]; then site='default'; fi
+
+host="default"
+roles="django-cms"
+
+./play $host $site $roles
+
+exit

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+usage='Usage: ./facts [hosts]\nDafault host = "default" from ../hosts'
+
+host='default'
+if [ ! -z $1 ]; then 
+	host=$1
+fi
+
+if [ "$host" = "localhost" ]; then
+ may_be_localy='--connection=local'
+fi
+
+ansible $host -i ../hosts -m setup $may_be_localy
+
+echo '-------'
+echo $usage
+exit

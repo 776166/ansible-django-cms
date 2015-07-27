@@ -1,0 +1,114 @@
+#!/bin/sh
+# v 1.1
+
+mysql_file_pass='/home/www/.mysql_pass'
+
+restore_transfer_db(){
+if [ -e $HOME/backup/transfer-sql.gz ]; then
+ echo 'Restoring '$HOME'/backup/transfer-sql.gz'
+ zcat $HOME'/backup/transfer-sql.gz' | $HOME'/bin/mysql'
+ echo 'Done'
+fi
+exit
+}
+
+backup(){
+echo 'Backuping to '$FILE
+mysqldump --default-character-set=utf8 -e -q -u $LOGIN -p$PASS $DB > $FILE
+gzip -vf $FILE
+echo 'Done'
+}
+
+backup_db(){
+FILE=$HOME"/backup/"`date +%Y%m%d-%H%M`"-sql"
+backup
+exit
+}
+
+create_transfer_db(){
+FILE=$HOME"/backup/transfer-sql"
+backup
+exit
+}
+
+create_db(){
+if [ -e $mysql_file_pass ]; then
+ mysql_pass=`cat $mysql_file_pass`
+ if [ `echo 'show databases;'| mysql -s -u root -p$mysql_pass | grep -v ^information_schema | grep -v performance_schema|grep ^$DB$|wc -l` = 0 ]; then
+ echo 'Creating DB..'
+ echo "create database "$DB" /*!40100 default character set UTF8*/;" | mysql -u root -p$mysql_pass
+ fi
+ echo 'Granting DB rights..'
+ echo "grant all on $DB.* to $LOGIN@localhost identified by '$PASS';" | mysql -u root -p$mysql_pass
+else
+ echo 'No /home/mad/.mysql_pass file. Can not install DB automatically.'
+ echo "create database "$DB" /*!40100 default character set UTF8*/;" | mysql -u root -p
+ echo "grant all on $DB.* to $LOGIN@localhost identified by '$PASS';" | mysql -u root -p
+fi
+exit 0
+}
+
+repare_db(){
+mysql_exec=$HOME"/bin/mysql"
+for table in `echo "show tables;" | $mysql_exec | grep -v "Tables_in"`; do
+ test=`echo "check table "$table | $mysql_exec | grep -v "status OK"`
+ test="asd"
+ if [ -z $test ]; then
+  echo "ok"
+  else
+  echo "repair table "$table | $mysql_exec | grep -v "Table"
+ fi
+  echo "analyze table "$table | $mysql_exec | grep -v "Table"
+  echo "optimize table  "$table | $mysql_exec | grep -v "Table"
+done
+exit 0
+}
+
+P1=`dirname $0`
+HOME=`cd $P1; cd .. ; pwd`
+
+if [ `uname -a | grep freebsd | wc -l` = '1' ]; then
+mysql='/usr/local/bin/mysql'
+else
+mysql='/usr/bin/mysql'
+fi
+
+CONF=$HOME'/etc/settings_local.py'
+DB=`cat $CONF | sed -e "s/^ *//g" | grep -i 'name'|cut -d"'" -f4`
+LOGIN=`cat $CONF | sed -e "s/^ *//g" | grep -i 'user'|cut -d"'" -f4`
+PASS=`cat $CONF | sed -e "s/^ *//g" | grep -i 'password'|cut -d"'" -f4`
+
+echo $CONF
+echo $DB
+echo $LOGIN
+echo $PASS
+
+if [ ! -z $1 ]; then
+	case $1 in
+	'-c'|'--create')	create_db
+	;;
+	'-r'|'--repare')	repare_db
+	;;
+	'--create-transfer')	create_transfer_db
+	;;
+	'--restore-transfer')	restore_transfer_db
+	;;
+	'-b'|'--backup')	backup_db
+	;;
+	*)
+	echo 'Usage: ./mysql'
+	echo '-b | --backup:	Backup DB'
+	echo '-r | --repare:	Repare and optimize DB'
+	echo '-c | --create:	Create DB'
+	echo '--create-transfer:  Create DB for transfer'
+	echo '--restore-transfer: Restore transfed DB'
+	echo '-h | --help:	Help'
+	exit
+	;;
+	esac
+fi
+
+#echo $P2
+#/usr/local/bin/madbanner/bin/stable/madconf_reader.sh $P2
+$mysql --default-character-set=utf8 -u $LOGIN -p$PASS $DB
+#show tables;

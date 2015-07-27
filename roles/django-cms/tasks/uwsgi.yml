@@ -1,0 +1,77 @@
+########## UWSGI
+
+  - name: (UWSGI) create {{ uwsgi_conf }}
+    file: >
+      dest={{ uwsgi_conf }}
+      state=directory
+      owner="root"
+      group="root"
+      mode=0755
+
+#################### nginx user:group
+
+  - name: (UWSGI) get nginx user
+    shell: "cat /etc/nginx/nginx.conf | grep -vi '#' | grep ^user | cut -d' ' -f2 |cut -d';' -f1"
+    register: nginx_user
+
+  - name: (UWSGI) get nginx group
+    shell: cat /etc/nginx/nginx.conf | grep -vi '#' | grep ^user | cut -d' ' -f3 |cut -d';' -f1
+    register: nginx_group
+
+  # - debug: var=nginx_user.stdout
+  # - debug: var=nginx_group.stdout
+
+  - name: (UWSGI) set nginx user
+    set_fact: nginx__user={% if nginx_user.stdout != '' %}{{ nginx_user.stdout }}{% else %}nobody{% endif %}
+
+  - name: (UWSGI) set nginx group
+    set_fact: nginx__group={% if nginx_group.stdout != '' %}{{ nginx_group.stdout }}{% else %}{{ nginx__user }}{% endif %}
+
+  # - debug: var=nginx__user
+  # - debug: var=nginx__group
+
+#################### // nginx user:group
+
+  - name: (UWSGI) create uwsgi.yml
+    template: >
+      src=uwsgi.yml
+      dest={{ uwsgi_conf }}{{ semantic_name }}.yml
+      owner="root"
+      group="root"
+
+  - name: (UWSGI) create symlink to uwsgi config
+    file: src={{ uwsgi_conf }}{{ semantic_name }}.yml
+      dest={{ dist_dir }}{{ site }}/etc/uwsgi.yml
+      state=link
+
+  - name: (UWSGI) create symlink to working uwsgi path
+    file: src={{ uwsgi_conf }}{{ semantic_name }}.yml
+      dest={{ uwsgi_conf_work }}{{ semantic_name }}.yml
+      state=link
+
+  - name: (UWSGI) create symlinks for logs and backups
+    file: >
+      src=/var/{{ item }}/{{ user_uid }}/{{ project }}/{{ site }}
+      dest={{ dist_dir }}{{ site }}/{{ item }}
+      state=link
+      owner="{{ user_uid }}"
+      group="{{ user_uid }}"
+      mode=0750
+    with_items:
+      - log
+      - backups
+
+  - name: (UWSGI) create symlink for uwsgi log file
+    file: >
+      src=/var/log/uwsgi/app/{{ semantic_name }}.log
+      dest={{ dist_dir }}{{ site }}/log/uwsgi.log
+      state=link
+      force=yes
+      owner="{{ user_uid }}"
+      group="{{ user_uid }}"
+      mode=0640
+
+  - name: (UWSGI) ensure uwsgoi is started 
+    # fix in 2.0
+    # service: name=uwsgi state=started enabled=yes
+    command: service uwsgi start

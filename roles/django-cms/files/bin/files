@@ -1,0 +1,83 @@
+#!/bin/sh
+description='files — files backup utility'
+
+P1=`dirname $0`
+HOME=`cd $P1; cd .. ; pwd`
+BACKUP_DIR=$HOME'/backups/'
+
+create_ignorelist(){
+find $HOME -name '.Apple' -exec rm -r {} +
+}
+
+create_transfer(){
+filename='transfer-files.zip'
+create
+}
+
+restore_transfer(){
+filename='transfer-files.zip'
+restore
+}
+
+restore_last(){
+filename='last-files.zip'
+restore
+}
+
+create_backup(){
+filename=`date +%Y%m%d-%H%M`'-files.zip'
+create
+if [ -e $BACKUP_DIR'last-files.zip' ]; then rm $BACKUP_DIR'last-files.zip'; fi
+cp $filename $BACKUP_DIR'last-files.zip'
+}
+
+create(){
+filename=$BACKUP_DIR$filename
+cd $HOME
+
+# create_ignorelist
+
+if [ -e $filename ]; then rm -v $filename; fi
+for qwe in 'app etc bin tmp .rnd media static'; do
+zip -r -u -x *.pyc -p $filename ./$qwe
+done
+zip -r -u -p $filename ./log
+zip -r -u -p $filename ./manage.py
+zip -r -u -p $filename ./.my.cnf
+}
+restore(){
+filename=$BACKUP_DIR$filename
+if [ -e $filename ]; then
+unzip $filename -d $HOME
+else
+echo 'No '$filename
+fi
+}
+
+help(){
+echo $description
+echo "Usage:	./files [option]"
+echo ""
+echo "If no option is used, local backup and 'last-files' symlink will be create"
+echo "'--create-transfer'  Create transfer archive"
+#echo "'--restore-transfer' Restore transfer archive if exists"
+echo "'-l'|'--last'    Restore last local archive if exists"
+echo "'-h'|'--help'    Help"
+}
+
+if [ ! -z $1 ]; then
+case $1 in
+	'--create-transfer')	create_transfer
+	;;
+#	'--restore-transfer')	restore_transfer
+#	;;
+	'-l'|'--last')		restore_last
+	;;
+	'-h'|'--help')		help
+	;;
+	*)			help
+	;;
+esac
+else
+	create_backup
+fi

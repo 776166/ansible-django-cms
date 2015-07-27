@@ -1,0 +1,87 @@
+#!/bin/sh
+##
+## ver 1.0.2
+## http://kb.madbanner.com/x/gYC8
+usage_string='Usage: uwsgict start|stop|restart|status|grace|graceful'
+##
+
+export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bin/'
+
+P1=`dirname $0`
+HOME=`cd $P1; cd .. ; pwd`
+
+pid_file=$HOME'/log/uwsgi.pid'
+script=$HOME'/bin/uwsgictl'
+conf=$HOME'/etc/uwsgi.yml'
+
+iam=`whoami`
+if [ $iam = 'root' ]; then
+ echo 'Do not run under root'
+ exit 0
+fi
+
+if [ -z $1 ]; then
+ echo $usage_string &&  exit
+fi
+
+status() {
+if [ -e $pid_file ]; then
+PID=`cat $pid_file`
+if [ `ps ax | grep -i 'uwsgi' | grep $PID | wc -l` != 0 ]; then
+echo uwsgi is running with pid $PID
+else
+echo uwsgi is not running
+fi
+else
+echo 'no pid. is it your first start?'
+ps -eo pid,ppid,args | grep -iv grep | grep -iv uwsgictl | grep --color -i uwsgi
+fi
+}
+
+run_test() {
+if [ `$script status | grep 'uwsgi is running with pid' | wc -l` = 1 ]; then
+ running='yes'
+else
+ running='no'
+fi
+}
+
+start(){
+run_test
+if [ $running = 'no' ]; then
+uwsgi -y $conf --pidfile $pid_file
+sleep 1 && status
+else
+echo 'uwsgi already running'
+fi
+}
+
+stop() {
+run_test
+if [ $running = 'yes' ]; then
+echo 'stopping uwsgi'
+uwsgi --stop $pid_file
+sleep 1 && status
+else
+echo 'uwsgi is not running'
+fi
+}
+
+grace(){
+run_test
+if [ $running = 'yes' ]; then
+uwsgi --reload $pid_file
+sleep 1 && status
+else
+echo 'uwsgi is not running'
+fi
+}
+
+case $1 in
+start) start ;;
+stop) stop ;;
+restart) stop && start ;;
+status) status;;
+grace) grace;;
+graceful) grace;;
+esac

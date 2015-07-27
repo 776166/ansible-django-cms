@@ -1,0 +1,13 @@
+########## db
+
+  - include: db/mysql.yml
+  - include: db/sqlite.yml
+
+  - name: (DB) syncdb
+    django_manage: >
+      command=syncdb
+      app_path="{{ dist_dir }}{{ site }}"
+      virtualenv={{ virtualenv }}
+
+  - name: (DB) create admin user
+    shell: . {{ virtualenv }}bin/activate && echo 'from django.contrib.auth.models import User; User.objects.create_superuser("{{ admin_username }}", "{{ admin_email }}", "{{ admin_pass }}")' | {{ dist_dir }}{{ site }}/manage.py shell

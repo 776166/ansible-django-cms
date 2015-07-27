@@ -1,0 +1,13 @@
+#!/bin/sh
+
+#usage='Usage: play (site)\nExamlpe: "./play my_site" for sites/my_site.yml'
+
+#if [ -z $1 ]; then echo $usage && exit 1; fi
+
+host="localhost"
+roles="prepare"
+site='foo'
+
+./play $host $site $roles
+
+exit

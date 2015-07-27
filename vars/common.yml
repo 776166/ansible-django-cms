@@ -1,0 +1,34 @@
+---
+
+dist_dir: "/home/{{ user_uid }}/{{ project }}/"
+
+virtualenv: "{{ dist_dir }}{{ virtualenv_dir }}/"
+chdir: "{{ dist_dir }}{{ site }}/"
+
+semantic_name: "{{ user_uid }}_{{ project }}_{{ site }}"
+
+log_dir: "{{ dist_dir }}{{ site }}/log/"
+
+uwsgi_socket: "/var/run/uwsgi/app/{{ semantic_name }}/socket"
+server_name: "{{ url }}"
+nginx_server_name: "{{ server_name }}{% if url_aliases is defined %} {{ url_aliases }}{% endif %}"
+
+nginx_setup: "{{ dist_dir }}{{ site }}/etc/nginx.conf"
+nginx_conf: "/etc/nginx/sites-available/"
+nginx_conf_work: "/etc/nginx/sites-enabled/"
+
+uwsgi_setup: "{{ dist_dir }}{{ site }}/etc/uwsgi.yml"
+uwsgi_conf: "/etc/uwsgi/apps-available/"
+uwsgi_conf_work: "/etc/uwsgi/apps-enabled/"
+
+settings_py_local: "{{ dist_dir }}{{ site }}/etc/settings.py"
+
+database: "{% if db is not defined %}sqlite{% else %}{% if db == 'mysql' %}mysql{% endif %}{% if db == 'sqlite' %}sqlite{% endif %}{% endif %}"
+
+db_name: "{{ project }}_{{ site }}{% if db == 'sqlite' %}.db{% endif %}"
+# Generated at LOCAL machine and do not regenerated untill file deletion
+db_password: "{{ lookup('password', '/tmp/ansible@' + ansible_hostname + '#' + project +'_'+ site + '_db_password chars=ascii_letters,digits,hexdigits length=8') }}"
+db_host: "localhost"
+
+sert__country: "{% if sert_country is not defined %}RU{% else %}{{ sert_country }}{% endif %}"
+sert__company: "{% if sert_company is not defined %}{{ url }}{% else %}{{ sert_company }}{% endif %}"

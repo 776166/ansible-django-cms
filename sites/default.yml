@@ -1,0 +1,57 @@
+---
+# default.yml — default site config. Edit freely.
+##################
+# Mandatory params
+
+# base dir with sites and common virtualenv
+project: "projects"
+
+# unix user with sites
+user_uid: "www"
+
+# base site url
+url: "foofoofoo.me"
+
+# Database engine
+# (mysql|sqlite) default:sqlite
+db: "mysql"
+
+# virtualenv/bin/djangocms params
+# deafult: "Europe/Moscow"
+timezone: "Europe/Moscow"
+
+# CMS languages
+languages: "en,ru"
+
+# 1.4,1.5,1.6,1.7,1.8,stable
+django_version: "stable"
+
+# 2.4,3.0,3.1,stable,develop
+cms_version: "stable"
+
+# install bootstrap
+bootstrap: "no"
+
+# Superuser login
+admin_username: "foo"
+# Superuser email
+admin_email: "foo@foofoofoo.me"
+# Superuser passowrd
+admin_pass: "foofoofoo"
+
+# Virtualenv dir
+virtualenv_dir: ".env"
+
+#################
+# Optional params
+
+# Site aliases space separated
+url_aliases: "foofoofoo.net foofoofoo.org"
+
+# Sertificates country
+# RU,US etc default: RU
+sert_country: "US"
+
+# Sertificates company
+# default: site url
+sert_company: "Foo monsters"

@@ -1,0 +1,30 @@
+############# Prepare
+
+  - name: (PREPARE) create user for web sites
+    user: name="{{ user_uid }}" shell=/bin/bash
+
+  - name: (PREPARE) create installation directory
+    sudo_user: "{{ user_uid }}"
+    file: path="{{ dist_dir }}"
+      state=directory
+      recurse=yes
+
+  # - name: check if virtualenv exists
+  #   shell: "ls -al {{ dist_dir }} | grep '{{ virtualenv_dir }}' | wc -l"
+  #   register: virtualenv_checker
+
+  - name: (PREPARE) create Virtualenv
+    shell: "virtualenv {{ virtualenv }}"
+    sudo_user: "{{ user_uid }}"
+    # when: virtualenv_checker.stdout != "1"
+
+  - name: (PREPARE) install djangocms to virtualenv
+    pip: name={{ item }} state=present virtualenv={{ virtualenv }}
+    sudo_user: "{{ user_uid }}"
+    with_items:
+      - certifi
+      - pyopenssl
+      - ndg-httpsclient
+      - pyasn1
+      - djangocms-installer
+      - uwsgi

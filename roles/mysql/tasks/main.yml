@@ -1,0 +1,87 @@
+---
+# For clean installations and/or bad sysadmins
+# If you DO NOT HAVE proper /root/.my.cnf, it is very bad. You have to create it.
+#
+# 1) If you know your MySQL root password but you very lazy, just create /root/.my.cnf manually (root:root and 600 mode) with this content (withour '#'):
+
+# [client]
+# user=root
+# password=PASSWORD_HERE
+
+# 2) If you have MySQL with blank root passwod or fresh clean server, use "mysql-root $your_server" script
+# 3) If you lost your root password, use "mysql-root $your_server reset" script
+#
+# In both cases blank password will be removed by randomly generated, because it's right.
+
+  - name: (MySQL) install common packages
+    apt: name={{ item }} state=present
+    with_items:
+      - mysql-server
+      - mysql-client
+      - libmysqlclient-dev
+      - python-pip
+
+  - name: (MySQL) install python dependencies
+    pip: name={{ item }} state=present
+    with_items:
+      - MySQL-python
+
+  - debug: var=root_reset
+
+############### user=root password reset
+
+  - name: stop MySQL
+    service: name=mysql state=stopped
+    when: root_reset == "yes"
+
+  - name: copy reset.sh
+    template: >
+      src=reset.sh
+      dest=/root/reset.sh
+      owner=root
+      mode=0700
+    when: root_reset == "yes"
+
+  - name: perform password reset (about 15 sec)
+    shell: /root/reset.sh
+    register: resetsh
+    when: root_reset == "yes"
+
+  - debug: var=resetsh
+    when: root_reset == "yes"
+
+  - name: start MySQL service
+    service: name=mysql state=started enabled=yes
+    when: root_reset == "yes"
+
+  - name: clean after yourself (delete reset.sh)
+    file: >
+      path=/root/reset.sh
+      state=absent
+    when: root_reset == "yes"
+
+############### // user=root password reset
+
+  - name: (MySQL) ensure MySQL is started
+    service: name=mysql state=started enabled=yes
+
+  - name: (MySQL) set mysql root password for all root accounts
+    mysql_user: >
+      name=root
+      host={{ item }}
+      password={{ mysql_root_password }}
+    with_items:
+      - "{{ ansible_hostname }}"
+      - 127.0.0.1
+      - ::1
+      - localhost
+
+  - stat: path=/root/.my.cnf
+    register: my_cnf_exist
+
+  - name: (MySQL) create /root/.my.cnf file with root password credentials
+    template: >
+      src=my.cnf.root
+      dest=/root/.my.cnf
+      owner=root
+      mode=0600

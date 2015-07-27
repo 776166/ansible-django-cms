@@ -1,0 +1,4 @@
+---
+
+nginx__user: "{% if nginx_user.stdout != '' %}{{ nginx_user.stdout }}{% else %}nobody{% endif %}"
+nginx__group: "{% if nginx_group.stdout != '' %}{{ nginx_group.stdout }}{% else %}{{ nginx__user }}{% endif %}"

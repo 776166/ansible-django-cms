@@ -1,0 +1,5 @@
+########## MySQL
+
+  - name: (sqlite3) just for dummies
+    shell: echo "Say helow to sqlite3!"
+    when: db == "sqlite3"

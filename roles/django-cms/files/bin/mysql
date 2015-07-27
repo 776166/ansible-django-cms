@@ -1,0 +1,72 @@
+#!/bin/sh
+# v 2.0
+
+backup(){
+echo 'Backuping to '$FILE
+mysqldump --default-character-set=utf8 -e -q -u $LOGIN -p$PASS $DB > $FILE
+gzip -vf $FILE
+echo 'Done'
+}
+
+backup_db(){
+FILE=$HOME"/backups/"`date +%Y%m%d-%H%M`"-sql"
+backup
+exit
+}
+
+repare_db(){
+mysql_exec=$HOME"/bin/mysql"
+for table in `echo "show tables;" | $mysql_exec | grep -v "Tables_in"`; do
+ test=`echo "check table "$table | $mysql_exec | grep -v "status OK"`
+ test="asd"
+ if [ -z $test ]; then
+  echo "ok"
+  else
+  echo "repair table "$table | $mysql_exec | grep -v "Table"
+ fi
+  echo "analyze table "$table | $mysql_exec | grep -v "Table"
+  echo "optimize table  "$table | $mysql_exec | grep -v "Table"
+done
+exit 0
+}
+
+P1=`dirname $0`
+HOME=`cd $P1; cd .. ; pwd`
+
+# if [ `uname -a | grep freebsd | wc -l` = '1' ]; then
+# mysql='/usr/local/bin/mysql'
+# else
+# mysql='/usr/bin/mysql'
+# fi
+
+CONF=$HOME'/.my.cnf'
+
+DB=`cat $CONF | grep -i ^user |cut -d"=" -f2`
+LOGIN=$DB
+PASS=`cat $CONF | grep -i ^password |cut -d"=" -f2`
+
+# echo $CONF
+# echo $DB
+# echo $LOGIN
+# echo $PASS
+
+if [ ! -z $1 ]; then
+	case $1 in
+	'-r'|'--repare')	repare_db
+	;;
+	'-b'|'--backup')	backup_db
+	;;
+	*)
+	echo 'Usage: ./mysql'
+	echo '-b | --backup:	Backup DB'
+	echo '-r | --repare:	Repare and optimize DB'
+	echo '-h | --help:	Help'
+	exit
+	;;
+	esac
+fi
+
+#echo $P2
+#/usr/local/bin/madbanner/bin/stable/madconf_reader.sh $P2
+mysql --default-character-set=utf8 -u $LOGIN -p$PASS $DB
+#show tables;

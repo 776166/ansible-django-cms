@@ -1,0 +1,70 @@
+########## NGINX
+
+  - name: (NGINX) create nginx.conf
+    template: >
+      src=nginx.conf
+      dest={{ nginx_conf }}{{ semantic_name }}.conf
+      owner="root"
+      group="root"
+
+  - name: (NGINX) create symlink to working nginx path
+    file: src={{ nginx_conf }}{{ semantic_name }}.conf
+      dest={{ nginx_conf_work }}{{ semantic_name }}.conf
+      state=link
+
+  - name: (NGINX) create symlink to nginx config
+    file: src={{ nginx_conf }}{{ semantic_name }}.conf
+      dest={{ nginx_setup }}
+      state=link
+
+  - name: (NGINX) create symlink to nginx logs
+    file: > 
+      src=/var/log/nginx/{{ semantic_name }}_{{ item }}.log
+      dest={{ log_dir }}nginx_{{ item }}.log
+      state=link
+      force=yes
+    with_items:
+      - "access"
+      - "error"
+
+######### NGINX sertificates for https://
+
+  - name: (NGINX) check if exists sertificates
+    shell: ls -a {{ dist_dir }}{{ site }}/etc/ | grep ^server. | wc -l
+    register: sert_checker
+
+  - name: (NGINX) generate certificate step 1
+    shell: openssl genrsa -des3 -passout pass:{{ db_password }} -out {{ dist_dir }}{{ site }}/etc/server.key 4096
+    when: sert_checker.stdout != "4"
+
+  - name: (NGINX) generate certificate step 2
+    command: openssl req -subj '/CN={{ url }}/O={{ sert__company }}/C={{ sert__country }}' -new -key {{ dist_dir }}{{ site }}/etc/server.key -passin pass:{{ db_password }} -out {{ dist_dir }}{{ site }}/etc/server.csr
+    when: sert_checker.stdout != "4"
+
+  - name: (NGINX) generate certificate step 3
+    command: cp {{ dist_dir }}{{ site }}/etc/server.key {{ dist_dir }}{{ site }}/etc/server.key.original
+    when: sert_checker.stdout != "4"
+
+  - name: (NGINX) generate certificate step 4
+    command: openssl rsa -passin pass:{{ db_password }} -in {{ dist_dir }}{{ site }}/etc/server.key.original -out {{ dist_dir }}{{ site }}/etc/server.key
+    when: sert_checker.stdout != "4"
+
+  - name: (NGINX) generate certificate step 5
+    command: openssl x509 -req -days 365 -in {{ dist_dir }}{{ site }}/etc/server.csr -signkey {{ dist_dir }}{{ site }}/etc/server.key -out {{ dist_dir }}{{ site }}/etc/server.crt
+    when: sert_checker.stdout != "4"
+
+  - name: (NGINX) sertificates chmod 600
+    file: path={{ dist_dir }}{{ site }}/etc/server.{{ item }}
+      owner="{{ user_uid }}"
+      group="{{ user_uid }}"
+      mode=0440
+    with_items:
+        - key
+        - csr
+        - crt
+        - key.original
+
+  - name: (NGINX) reload nginx
+    command: service nginx reload
+    # fix in 2.0
+    # service: name=nginx state=reloaded

@@ -1,0 +1,46 @@
+########## MySQL
+
+# Make shure that you have actual /root/.my.cnf file. (see mysql-root ROLE for detales)
+
+  - name: (MySQL) install common packages
+    apt: name={{ item }} state=present
+    with_items:
+      - mysql-server
+      - mysql-client
+      - libmysqlclient-dev
+      - python-pip
+    when: db == "mysql"
+
+  - name: (MySQL) install python dependencies
+    pip: name={{ item }} state=present
+    with_items:
+      - MySQL-python
+    when: db == "mysql"
+
+  - name: (MySQL) ensure MySQL is started
+    service: name=mysql state=started enabled=yes
+    when: db == "mysql"
+
+  - name: (MySQL) create MySQL database
+    mysql_db: >
+      name={{ db_name }}
+      encoding=utf8
+      state=present
+    when: db == "mysql"
+
+  - name: (MySQL) create MySQL user
+    mysql_user: >
+      name={{ db_name }}
+      password={{ db_password }}
+      priv={{ db_name }}.*:ALL
+      state=present
+    when: db == "mysql"
+
+  - name: (MySQL) create local .my.cnf
+    template: >
+      src=../../templates/my.cnf
+      dest={{ dist_dir }}{{ site }}/.my.cnf
+      owner="{{ user_uid }}"
+      group="{{ user_uid }}"
+      mode=0600
+    when: db == "mysql"

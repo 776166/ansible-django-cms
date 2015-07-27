@@ -1,0 +1,16 @@
+---
+  - name: import site settings
+    include_vars: ../../../sites/{{ site }}.yml
+
+  - name: prepare virables
+    include_vars: ../../../vars/common.yml
+
+  - debug: var=ansible_nodename
+
+  - include: prepare.yml
+  - include: django-cms.yml
+  - include: uwsgi.yml
+
+  - include: db.yml
+
+  - include: nginx.yml

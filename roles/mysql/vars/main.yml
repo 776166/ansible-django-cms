@@ -1,0 +1,2 @@
+---
+mysql_root_password: "{{ lookup('password', '/tmp/ansible@' + ansible_hostname + '#mysql.root_password chars=ascii_letters,digits,hexdigits length=8') }}"

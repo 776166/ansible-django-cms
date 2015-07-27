@@ -1,0 +1,45 @@
+#!/bin/sh
+
+P1=`dirname $0`
+HOME=`cd $P1; cd .. ; pwd`
+
+cd $HOME/etc/
+
+#version=`echo $HOME | cut -d'/' -f5`
+
+filename=server
+
+password=`cat $HOME/etc/mad.conf | grep ssl_pass | cut -d' ' -f2`
+
+#pass:$password
+
+if [ ! -e $filename.key ] || [ ! -e $filename.key.orig ] || [ ! -e $filename.csr ] || [ ! -e $filename.crt ]; then
+echo step 1
+openssl genrsa \
+	-des3 \
+	-passout pass:$password \
+	-out $filename.key 4096
+echo step 2
+openssl req \
+	-subj '/CN=madget.net/O=madget.net LTD./C=RU' \
+	-new -key $filename.key \
+	-passin pass:$password \
+	-out $filename.csr
+cp $filename.key $filename.key.orig
+
+
+echo step 3
+openssl rsa \
+	-passin pass:$password \
+	-in $filename.key.orig \
+	-out $filename.key
+
+echo step 4
+openssl x509 -req -days 365 \
+	-in $filename.csr \
+	-signkey $filename.key \
+	-out $filename.crt
+else
+echo 'No need to generate'
+exit
+fi

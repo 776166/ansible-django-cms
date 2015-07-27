@@ -1,0 +1,23 @@
+#!/bin/sh
+
+if [ -z $2 ]; then
+ echo 'Usage: ./booker (host group) (role1) [role2] [role2]...'
+ exit
+fi
+
+hosts=$1
+
+for i in $*; do
+playbook=$playbook'_'$i
+done
+playbook=../`echo $playbook | cut -d'_' -f2-`'.yml'
+
+(
+echo '---'
+echo '- hosts: '$hosts
+echo '  sudo: True'
+echo '  roles:'
+for role in $2 $3 $4 $5 $6 $7; do
+ echo '    - '$role
+done
+) > $playbook
