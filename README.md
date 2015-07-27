@@ -3,10 +3,10 @@ Deploy virtualenv + django-cms + nginx (with `https://` support) + DB (sqlite3|M
 
 (tested only on Ubuntu 14.04, django-cms stable (3.1.2))
 
-1) [Djando-cms](http://www.django-cms.org/) installs via recommended `djangocms -p . my_site` to the [virtualenv](https://virtualenv.pypa.io/en/latest/)
-2) Standart [nginx](http://nginx.org).
-3) [MySQL](http://www.mysql.com) or [sqlite3](https://www.sqlite.org) database.
-4) Standart [uwsgi](http://uwsgi-docs.readthedocs.org/en/latest/).
+1. [Djando-cms](http://www.django-cms.org/) installs via recommended `djangocms -p . my_site` to the [virtualenv](https://virtualenv.pypa.io/en/latest/).
+2. Standart [nginx](http://nginx.org).
+3. [MySQL](http://www.mysql.com) or [sqlite3](https://www.sqlite.org) database.
+4. Standart [uwsgi](http://uwsgi-docs.readthedocs.org/en/latest/).
 
 All components uses recommended paths (in Ubuntu):
 * `/etc/nginx/sites-available` and `/etc/nginx/sites-enabled`
@@ -15,7 +15,7 @@ All components uses recommended paths (in Ubuntu):
 # HOW TO
 
 You mast have ansible installed (`apt-get install ansible`).
-Use preinstalled scripts. Scripts with '.local' must be used if you work on localhost.
+Use preinstalled scripts. Scripts with `.local` must be used if you work on localhost.
 
 ## 1. Edit site config and `hosts`
 * Edit `sites/default.yml` config or create your own. `sites/my_site.yml` for example.
@@ -27,7 +27,8 @@ Run once prepare ansible role `bin/prepare` or `bin/prepare.local`
 ## 3. Prepare Database
 ### Sqlite3
 * Very carefull do nothing.
-### Mysql
+
+### MySQL
 * If you have production MySQL with `/root/.my.cnf`, do nothing and skip mysql section.
 * For clean servers run `bin/mysql` or `bin/mysql.local`
 * If you do not remember MySQL root password or you want to reset it, run `bin/mysql reset` or `bin/mysql.local reset`
