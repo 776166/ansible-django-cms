@@ -17,10 +17,12 @@ All components uses recommended paths:
 You mast have ansible installed (`apt-get install ansible`).
 Use preinstalled scripts. Scripts with '.local' must be used if you work on localhost.
 
-## Edit config
+## Edit site config
 Edit `sites/default.yml` config or create your own. `sites/my_site.yml` for example.
+
 ## Prepare server
 Run once prepare ansible role `bin/prepare` or `bin/prepare.local`
+
 ## Prepare Database
 ### Sqlite3
 * Very carefull do nothing.
@@ -28,14 +30,16 @@ Run once prepare ansible role `bin/prepare` or `bin/prepare.local`
 * If you have production MySQL with `/root/.my.cnf`, do nothing and skip mysql section.
 * For clean servers run `bin/mysql` or `bin/mysql.local`
 * If you do not remember MySQL root password or you want to reset it, run `bin/mysql reset` or `bin/mysql.local reset`
+
 ## Install django-cms
 * If you want to use `sites/default.yml`, run `bin/django-cms` or `bin/django-cms.local`.
 * If you want to use `sites/my_site_.yml`, run `bin/django-cms my_site` or `bin/django-cms.local my_site`.
 
-After it you will get fully configured site.
+After it you will get fully configured and launched site.
 
 #Notes
 * Uwsgi runs under nginx user and group. See `/etc/nginx/nginx.conf`
+* No additional scripts to run after reboot needed.
 
 #Site config Example
 ```
