@@ -14,8 +14,8 @@ All components uses recommended paths (in Ubuntu):
 
 # HOW TO
 
-You mast have ansible installed (`apt-get install ansible`).
-Use preinstalled scripts. Scripts with `.local` must be used if you work on localhost.
+You must have ansible installed (`apt-get install ansible`).
+Use config scripts from `bin/` (do not sell your soul to ansible command line). Scripts with `.local` must be used if you work on localhost.
 
 ## 1. Edit site config and `hosts`
 * Edit `sites/default.yml` config or create your own. `sites/my_site.yml` for example.
