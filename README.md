@@ -1,14 +1,14 @@
 # django-cms via Ansible
-Deploy virtualenv + django-cms + nginx + DB (sqlite3|MySQL) + uwsgi via ansible.
+Deploy virtualenv + django-cms + nginx (with `https://` support) + DB (sqlite3|MySQL) + uwsgi via ansible.
 
 (tested only on Ubuntu 14.04, django-cms stable (3.1.2))
 
-1) Djando-cms installs via recommended "djangocms -p . my_site"
-2) Standart nginx.
-3) MySQL or sqlite3 database.
-4) Standart uwsgi.
+1) [Djando-cms](http://www.django-cms.org/) installs via recommended `djangocms -p . my_site` to the [virtualenv](https://virtualenv.pypa.io/en/latest/)
+2) Standart [nginx](http://nginx.org).
+3) [MySQL](http://www.mysql.com) or [sqlite3](https://www.sqlite.org) database.
+4) Standart [uwsgi](http://uwsgi-docs.readthedocs.org/en/latest/).
 
-All components uses recommended paths:
+All components uses recommended paths (in Ubuntu):
 * `/etc/nginx/sites-available` and `/etc/nginx/sites-enabled`
 * `/etc/uwsgi/apps-available` and `/etc/uwsgi/apps-enabled`
 
