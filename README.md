@@ -35,7 +35,7 @@ Run once prepare ansible role `bin/prepare` or `bin/prepare.local`
 
 ## 4. Install django-cms
 * If you want to use `sites/default.yml`, run `bin/django-cms` or `bin/django-cms.local`.
-* If you want to use `sites/my_site_.yml`, run `bin/django-cms my_site` or `bin/django-cms.local my_site`.
+* If you want to use `sites/my_site.yml`, run `bin/django-cms my_site` or `bin/django-cms.local my_site`.
 
 After it you will get fully configured and launched site. Profit.
 
